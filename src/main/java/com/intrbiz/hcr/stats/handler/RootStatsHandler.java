@@ -1,4 +1,6 @@
-package com.intrbiz.hcr.commands;
+package com.intrbiz.hcr.stats.handler;
+
+import static io.netty.handler.codec.http.HttpVersion.*;
 
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -6,29 +8,39 @@ import java.util.concurrent.TimeUnit;
 
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.Member;
-import com.intrbiz.hcr.command.Command;
-import com.intrbiz.hcr.command.CommandContext;
+import com.intrbiz.hcr.command.CommandProcessor;
 import com.intrbiz.hcr.model.MemberMetadata;
+import com.intrbiz.hcr.stats.StatsHandler;
 import com.intrbiz.hcr.task.MemberMetadataTask;
 
-public class InfoCommand extends Command
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.util.CharsetUtil;
+
+public class RootStatsHandler extends StatsHandler
 {
-    public InfoCommand()
+    private final CommandProcessor processor;
+    
+    public RootStatsHandler(CommandProcessor processor)
     {
-        super("info", 0, new String[] {}, 0, 0, 0);
+        super("/");
+        this.processor = processor;
     }
 
     @Override
-    public void process(CommandContext ctx)
+    public FullHttpResponse process(FullHttpRequest request)
     {
         StringBuilder m = new StringBuilder("{\r\n");
         m.append("\"version\": \"0.0.3\"").append(",\r\n");
-        m.append("\"clients\": ").append(ctx.processor().getClientCount()).append(",\r\n");
-        m.append("\"keys\": ").append(ctx.processor().getData().size()).append(",\r\n");
+        m.append("\"clients\": ").append(this.processor.getClientCount()).append(",\r\n");
+        m.append("\"keys\": ").append(this.processor.getData().size()).append(",\r\n");
         // cluster info
         MemberMetadata total = new MemberMetadata();
-        Cluster cluster = ctx.processor().getHazelcast().getCluster();
-        Map<Member, Future<MemberMetadata>> metadataFutures = ctx.processor().getExecutor().submitToAllMembers(new MemberMetadataTask());
+        Cluster cluster = this.processor.getHazelcast().getCluster();
+        Map<Member, Future<MemberMetadata>> metadataFutures = this.processor.getExecutor().submitToAllMembers(new MemberMetadataTask());
         m.append("\"members\": [").append("\r\n");
         boolean ns = false;
         for (Member member : cluster.getMembers())
@@ -63,6 +75,8 @@ public class InfoCommand extends Command
         m.append("\"total_memory\": ").append(total.getTotalMemory()).append(",\r\n");
         m.append("\"free_memory\": ").append(total.getFreeMemory()).append("\r\n");
         m.append("}\r\n");
-        ctx.writeBulkString(m.toString());
+        // response
+        return new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, Unpooled.copiedBuffer(m.toString(), CharsetUtil.UTF_8));
     }
+    
 }

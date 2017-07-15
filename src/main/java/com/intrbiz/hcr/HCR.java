@@ -9,6 +9,8 @@ import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.intrbiz.hcr.command.CommandProcessor;
+import com.intrbiz.hcr.stats.StatsServer;
+import com.intrbiz.hcr.stats.handler.RootStatsHandler;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -46,11 +48,14 @@ public class HCR implements Runnable
     private HazelcastInstance hazelcastInstance;
     
     private CommandProcessor processor;
+    
+    private StatsServer statsServer;
 
-    public HCR(int port)
+    public HCR(int port, int statsPort)
     {
         super();
         this.port = port;
+        this.statsServer = new StatsServer(statsPort);
     }
 
     public int getSocketTimeout()
@@ -102,6 +107,9 @@ public class HCR implements Runnable
             this.hazelcastInstance = Hazelcast.getOrCreateHazelcastInstance(config);
             // setup our processor
             this.processor = new CommandProcessor(this.hazelcastInstance);
+            this.statsServer.registerHandler(new RootStatsHandler(this.processor));
+            // start the stats server
+            this.statsServer.start();
             // start the sever
             ServerBootstrap b = new ServerBootstrap();
             b.group(this.bossGroup, this.workerGroup);
@@ -145,6 +153,7 @@ public class HCR implements Runnable
     public void stop()
     {
         this.serverChannel.close().awaitUninterruptibly();
+        this.statsServer.stop();
     }
     
     private static String coalesceEmpty(String... strings)
@@ -165,8 +174,9 @@ public class HCR implements Runnable
         int port = Integer.parseInt(coalesceEmpty(System.getProperty("hcr.port"), System.getenv("hcr_port"), "6379"));
         int socketTimeout = Integer.parseInt(coalesceEmpty(System.getProperty("hcr.socket.timeout"), System.getenv("hcr_socket_timeout"), "600"));
         int keyTimeout = Integer.parseInt(coalesceEmpty(System.getProperty("hcr.key.timeout"), System.getenv("hcr_key_timeout"), "3600"));
+        int statsPort = Integer.parseInt(coalesceEmpty(System.getProperty("hcr.stats.port"), System.getenv("hcr_stats_port"), "6380"));
         // create our server
-        HCR hcr = new HCR(port);
+        HCR hcr = new HCR(port, statsPort);
         hcr.setSocketTimeout(socketTimeout);
         hcr.setKeyTimeout(keyTimeout);
         hcr.run();
