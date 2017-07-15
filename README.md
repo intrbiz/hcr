@@ -89,6 +89,31 @@ You can connect to the cluster as follows:
         "free_memory": 295657368
     }
 
+## Status HTTP API
+
+HCR also provides a simple HTTP status API, which overs basic information about the running cluster.  You can connect to the HTTP status API on any instance, by default on port `6380`.  For example:
+
+    #> curl http://172.17.0.2:6380/
+    {
+        "version": "0.0.3",
+        "clients": 0,
+        "keys": 0,
+        "members": [
+            {
+                "id": "e21cfc10-b522-4fd1-8550-ce770e1acd58",
+                "address": "[172.17.0.2]:6580",
+                "max_memory": 3713531904,
+                "total_memory": 192413696,
+                "free_memory": 142391768,
+                "cpu_count": 4,
+                "uptime": 22110
+            }
+        ],
+        "max_memory": 3713531904,
+        "total_memory": 192413696,
+        "free_memory": 142391768
+    }
+
 ## License
 
 HCR
