@@ -45,7 +45,7 @@ List all available commands.
 
 Politely close this connection
 
-## Running HCQ
+## Running HCR
 
 HCR can easily be deployed as a Docker container:
 
