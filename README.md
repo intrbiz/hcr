@@ -89,7 +89,7 @@ You can connect to the cluster as follows:
         "free_memory": 295657368
     }
 
-## Status HTTP API
+## HTTP Status API
 
 HCR also provides a simple HTTP status API, which overs basic information about the running cluster.  You can connect to the HTTP status API on any instance, by default on port `6380`.  For example:
 
