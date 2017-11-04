@@ -25,11 +25,13 @@ public class SetCommand extends Command
             }
             else
             {
+                this.markError();
                 ctx.writeError("Invalid arguments");
             }
         }
         else
         {
+            this.markError();
             ctx.writeError("Invalid arguments");
         }
     }

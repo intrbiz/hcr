@@ -26,6 +26,7 @@ public class DelCommand extends Command
         }
         else
         {
+            this.markError();
             ctx.writeError("Invalid arguments");
         }
     }

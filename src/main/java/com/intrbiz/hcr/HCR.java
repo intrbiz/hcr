@@ -1,6 +1,9 @@
 package com.intrbiz.hcr;
 
-import java.util.logging.Logger;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.EvictionPolicy;
@@ -8,9 +11,12 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.intrbiz.gerald.source.JVMSource;
+import com.intrbiz.gerald.witchcraft.Witchcraft;
 import com.intrbiz.hcr.command.CommandProcessor;
-import com.intrbiz.hcr.stats.StatsServer;
-import com.intrbiz.hcr.stats.handler.RootStatsHandler;
+import com.intrbiz.hcr.stats.StatusServer;
+import com.intrbiz.hcr.stats.handler.MetricsStatusHandler;
+import com.intrbiz.hcr.stats.handler.RootStatusHandler;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -31,7 +37,7 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 
 public class HCR implements Runnable
 {
-    private static Logger logger = Logger.getLogger(HCR.class.getCanonicalName());
+    private static Logger logger = Logger.getLogger(HCR.class);
     
     private EventLoopGroup bossGroup;
 
@@ -49,13 +55,13 @@ public class HCR implements Runnable
     
     private CommandProcessor processor;
     
-    private StatsServer statsServer;
+    private StatusServer statsServer;
 
     public HCR(int port, int statsPort)
     {
         super();
         this.port = port;
-        this.statsServer = new StatsServer(statsPort);
+        this.statsServer = new StatusServer(statsPort);
     }
 
     public int getSocketTimeout()
@@ -107,14 +113,15 @@ public class HCR implements Runnable
             this.hazelcastInstance = Hazelcast.getOrCreateHazelcastInstance(config);
             // setup our processor
             this.processor = new CommandProcessor(this.hazelcastInstance);
-            this.statsServer.registerHandler(new RootStatsHandler(this.processor));
+            this.statsServer.registerHandler(new RootStatusHandler(this.processor));
+            this.statsServer.registerHandler(new MetricsStatusHandler());
             // start the stats server
             this.statsServer.start();
             // start the sever
             ServerBootstrap b = new ServerBootstrap();
             b.group(this.bossGroup, this.workerGroup);
             b.channel(NioServerSocketChannel.class);
-            b.option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator());
+            b.option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(false));
             b.childHandler(new ChannelInitializer<SocketChannel>()
             {
                 @Override
@@ -140,8 +147,7 @@ public class HCR implements Runnable
         }
         catch (Exception e)
         {
-            logger.severe("Failed to start HCR");
-            e.printStackTrace();
+            logger.fatal("Failed to start HCR", e);
         }
         finally
         {
@@ -170,6 +176,11 @@ public class HCR implements Runnable
     
     public static void main(String[] args)
     {
+        // setup logging
+        Logger.getRootLogger().addAppender(new ConsoleAppender(new PatternLayout("[%t] %d{dd/MM/yyyy HH:mm:ss(SSS)} [%-4r] %-5p %c %x - %m%n")));
+        Logger.getRootLogger().setLevel(Level.toLevel(coalesceEmpty(System.getProperty("log.level"), System.getenv("log_level")), Level.INFO));
+        // setup some JVM metrics
+        Witchcraft.get().source(new JVMSource()).start();
         // get some config
         int port = Integer.parseInt(coalesceEmpty(System.getProperty("hcr.port"), System.getenv("hcr_port"), "6379"));
         int socketTimeout = Integer.parseInt(coalesceEmpty(System.getProperty("hcr.socket.timeout"), System.getenv("hcr_socket_timeout"), "600"));

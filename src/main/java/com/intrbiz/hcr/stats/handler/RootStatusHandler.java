@@ -10,7 +10,7 @@ import com.hazelcast.core.Cluster;
 import com.hazelcast.core.Member;
 import com.intrbiz.hcr.command.CommandProcessor;
 import com.intrbiz.hcr.model.MemberMetadata;
-import com.intrbiz.hcr.stats.StatsHandler;
+import com.intrbiz.hcr.stats.StatusHandler;
 import com.intrbiz.hcr.task.MemberMetadataTask;
 
 import io.netty.buffer.Unpooled;
@@ -20,13 +20,13 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 
-public class RootStatsHandler extends StatsHandler
+public class RootStatusHandler extends StatusHandler
 {
     private final CommandProcessor processor;
     
-    public RootStatsHandler(CommandProcessor processor)
+    public RootStatusHandler(CommandProcessor processor)
     {
-        super("/");
+        super("root", "/");
         this.processor = processor;
     }
 

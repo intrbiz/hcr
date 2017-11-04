@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.codahale.metrics.Meter;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IAtomicLong;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
+import com.intrbiz.gerald.witchcraft.Witchcraft;
 import com.intrbiz.hcr.commands.CommandCommand;
 import com.intrbiz.hcr.commands.DelCommand;
 import com.intrbiz.hcr.commands.GetCommand;
@@ -24,6 +26,12 @@ import io.netty.handler.codec.redis.RedisMessage;
 
 public class CommandProcessor
 {
+    // metrics
+    
+    private static Meter commandUnknownRate = Witchcraft.get().source("hcr").getRegistry().meter("command.unknown.rate");
+    
+    //
+    
     private Map<String, Command> commands = new HashMap<String, Command>();
     
     private final HazelcastInstance hazelcastInstance;
@@ -65,10 +73,11 @@ public class CommandProcessor
         Command commandHandler = this.commands.get(commandName);
         if (commandHandler != null)
         {
-            commandHandler.process(cmdCtx);
+            commandHandler.execute(cmdCtx);
         }
         else
         {
+            commandUnknownRate.mark();
             cmdCtx.writeErrorAndClose("No such command: " + commandName);
         }
     }

@@ -5,6 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
+import com.intrbiz.gerald.witchcraft.Witchcraft;
+
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
@@ -26,6 +30,10 @@ public abstract class Command
     private final int lastKey;
     
     private final int stepCount;
+    
+    private final Timer commandRuntime;
+    
+    private final Meter commandErrorRate;
 
     protected Command(String name, int arity, String[] flags, int firstKey, int lastKey, int stepCount)
     {
@@ -36,6 +44,8 @@ public abstract class Command
         this.firstKey = firstKey;
         this.lastKey = lastKey;
         this.stepCount = stepCount;
+        this.commandRuntime = Witchcraft.get().source("hcr").getRegistry().timer("command.[" + name + "].runtime");
+        this.commandErrorRate = Witchcraft.get().source("hcr").getRegistry().meter("command.[" + name + "].error.rate");
     }
 
     public String getName()
@@ -83,5 +93,27 @@ public abstract class Command
         return new ArrayRedisMessage(desc);
     }
     
-    public abstract void process(CommandContext ctx);
+    /**
+     * Mark that this command errored
+     */
+    protected void markError()
+    {
+        this.commandErrorRate.mark();
+    }
+    
+    /**
+     * Execute this command
+     */
+    public final void execute(CommandContext ctx)
+    {
+        try (Timer.Context tctx = this.commandRuntime.time())
+        {
+            this.process(ctx);
+        }
+    }
+    
+    /**
+     * Do the actual processing of this command
+     */
+    protected abstract void process(CommandContext ctx);
 }

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.intrbiz.hcr</groupId>
 	<artifactId>hcr</artifactId>
-	<version>0.0.3</version>
+	<version>0.0.4</version>
 	<dependencies>
 		<dependency>
 			<groupId>io.netty</groupId>
@@ -24,6 +24,21 @@
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-aws</artifactId>
 			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.intrbiz.gerald</groupId>
+			<artifactId>gerald-witchcraft</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.14</version>
+		</dependency>
+		<dependency>
+			<groupId>com.intrbiz.gerald</groupId>
+			<artifactId>polyakov-model</artifactId>
+			<version>1.2.0</version>
 		</dependency>
 	</dependencies>
 	<build>
