@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.Member;
+import com.intrbiz.hcr.HCR;
 import com.intrbiz.hcr.command.Command;
 import com.intrbiz.hcr.command.CommandContext;
 import com.intrbiz.hcr.model.MemberMetadata;
@@ -22,7 +23,7 @@ public class InfoCommand extends Command
     public void process(CommandContext ctx)
     {
         StringBuilder m = new StringBuilder("{\r\n");
-        m.append("\"version\": \"0.0.3\"").append(",\r\n");
+        m.append("\"version\": \"").append(HCR.VERSION).append("\"").append(",\r\n");
         m.append("\"clients\": ").append(ctx.processor().getClientCount()).append(",\r\n");
         m.append("\"keys\": ").append(ctx.processor().getData().size()).append(",\r\n");
         // cluster info

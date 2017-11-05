@@ -37,6 +37,8 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 
 public class HCR implements Runnable
 {
+    public static final String VERSION = "0.0.4";
+    
     private static Logger logger = Logger.getLogger(HCR.class);
     
     private EventLoopGroup bossGroup;

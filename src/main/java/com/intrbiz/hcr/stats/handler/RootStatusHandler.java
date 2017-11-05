@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.Member;
+import com.intrbiz.hcr.HCR;
 import com.intrbiz.hcr.command.CommandProcessor;
 import com.intrbiz.hcr.model.MemberMetadata;
 import com.intrbiz.hcr.stats.StatusHandler;
@@ -34,7 +35,7 @@ public class RootStatusHandler extends StatusHandler
     public FullHttpResponse process(FullHttpRequest request)
     {
         StringBuilder m = new StringBuilder("{\r\n");
-        m.append("\"version\": \"0.0.3\"").append(",\r\n");
+        m.append("\"version\": \"").append(HCR.VERSION).append("\"").append(",\r\n");
         m.append("\"clients\": ").append(this.processor.getClientCount()).append(",\r\n");
         m.append("\"keys\": ").append(this.processor.getData().size()).append(",\r\n");
         // cluster info
