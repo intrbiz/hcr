@@ -14,8 +14,8 @@ import com.codahale.metrics.Timer;
 import com.intrbiz.gerald.witchcraft.Witchcraft;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -108,7 +108,7 @@ public class StatusServer implements Runnable
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup);
             b.channel(NioServerSocketChannel.class);
-            b.option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(false));
+            b.option(ChannelOption.ALLOCATOR, new UnpooledByteBufAllocator(false));
             b.childHandler(new ChannelInitializer<SocketChannel>()
             {
                 @Override

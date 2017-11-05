@@ -19,7 +19,7 @@ import com.intrbiz.hcr.stats.handler.MetricsStatusHandler;
 import com.intrbiz.hcr.stats.handler.RootStatusHandler;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -123,7 +123,7 @@ public class HCR implements Runnable
             ServerBootstrap b = new ServerBootstrap();
             b.group(this.bossGroup, this.workerGroup);
             b.channel(NioServerSocketChannel.class);
-            b.option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(false));
+            b.option(ChannelOption.ALLOCATOR, new UnpooledByteBufAllocator(false));
             b.childHandler(new ChannelInitializer<SocketChannel>()
             {
                 @Override
