@@ -49,12 +49,12 @@ Politely close this connection
 
 HCR can easily be deployed as a Docker container:
 
-    #> docker run bergamotmonitoring/hcr:0.0.1
+    #> docker run bergamotmonitoring/hcr:0.0.5
 
 This will start an instance of HCR, listening on the Docker networking bridge.  
 If you start a second container, the two will see each other a form a cluster:
 
-    #> docker run bergamotmonitoring/hcr:0.0.1
+    #> docker run bergamotmonitoring/hcr:0.0.5
 
 You can connect to the cluster as follows:
 
