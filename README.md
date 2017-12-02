@@ -89,6 +89,38 @@ You can connect to the cluster as follows:
         "free_memory": 295657368
     }
 
+### Configuring HCR
+    
+HCR can be configured via a few environment variable which can be set on the container.
+
+#### `log_level`
+
+Set the logging level for HCR.  Defaults to `INFO`.  Posible values: `TRACE`, `DEBUG`, `INFO`, `WARNING`, `ERROR`, `FATAL`.
+
+#### `hcr_port`
+
+The port number for HCR to listen on,  Defaults to `6379`.
+
+#### `hcr_socket_timeout`
+
+The length of time a connection maybe idle in Seconds.  Defaults to `600` (10 Minutes).
+
+#### `hcr_key_timeout`
+
+The expiry time for an idle key in Seconds.  Defaults to `3600` (1 Hour).
+
+#### `hcr_stats_port`
+
+The port for the status HTTP server to run on.  Defaults to `6380`.
+
+#### `hcr_host`
+
+The hostname to connect to when running a healthcheck.  Default to `127.0.0.1`.  You probably do not need to change this.
+
+#### `hcr_healthcheck_key`
+
+The key to set in HCR when running a healthcheck.  Defaults to `__hcr_internal_healthcheck`.  You probably do not need to change this.
+
 ## HTTP Status API
 
 HCR also provides a simple HTTP status API, which overs basic information about the running cluster.  You can connect to the HTTP status API on any instance, by default on port `6380`.  For example:
