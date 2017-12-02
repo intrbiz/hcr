@@ -1,5 +1,7 @@
 package com.intrbiz.hcr;
 
+import static com.intrbiz.hcr.Util.*;
+
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -15,7 +17,9 @@ import com.intrbiz.gerald.source.JVMSource;
 import com.intrbiz.gerald.witchcraft.Witchcraft;
 import com.intrbiz.hcr.command.CommandProcessor;
 import com.intrbiz.hcr.stats.StatusServer;
+import com.intrbiz.hcr.stats.handler.HealthCheckStatusHandler;
 import com.intrbiz.hcr.stats.handler.MetricsStatusHandler;
+import com.intrbiz.hcr.stats.handler.PingStatusHandler;
 import com.intrbiz.hcr.stats.handler.RootStatusHandler;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -116,6 +120,8 @@ public class HCR implements Runnable
             // setup our processor
             this.processor = new CommandProcessor(this.hazelcastInstance);
             this.statsServer.registerHandler(new RootStatusHandler(this.processor));
+            this.statsServer.registerHandler(new PingStatusHandler());
+            this.statsServer.registerHandler(new HealthCheckStatusHandler());
             this.statsServer.registerHandler(new MetricsStatusHandler());
             // start the stats server
             this.statsServer.start();
@@ -162,16 +168,6 @@ public class HCR implements Runnable
     {
         this.serverChannel.close().awaitUninterruptibly();
         this.statsServer.stop();
-    }
-    
-    private static String coalesceEmpty(String... strings)
-    {
-        for (String s : strings)
-        {
-            if (s != null && s.length() > 0)
-                return s;
-        }
-        return null;
     }
     
     //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
